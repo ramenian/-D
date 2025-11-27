@@ -26,29 +26,31 @@ jobs:
           large-packages: true
           swap-storage: true
 
-      # 3. Build (SECRETS MOVED HERE)
+      # 3. DECODE LICENSE (The Fix)
+      - name: Decode License
+        run: |
+          echo "${{ secrets.UNITY_LICENSE }}" | base64 --decode > .ulf
+          
+      # 4. Build
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }} # Optional backup
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }} # Optional backup
         with:
           targetPlatform: WebGL
-          version: 2022.3.10f1 # Ensure this matches your Unity version!
+          version: 2022.3.10f1 # Check this version matches Unity Hub!
+          unityLicensingServer: .ulf # Read the file we just made
 
-      # 4. Zip
+      # 5. Zip
       - name: Zip Build
         run: |
           cd build/WebGL/WebGL
           zip -r ../../../game.zip . 
 
-      # 5. Deploy
+      # 6. Deploy
       - name: Deploy to Itch.io
         uses: manleydev/butler-publish-itchio-action@master
         env:
           BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
           CHANNEL: html
-          ITCH_GAME: happy4d # <--- REMEMBER TO FIX THIS
-          ITCH_USER: ramenian   # <--- REMEMBER TO FIX THIS
+          ITCH_GAME: Happy # <--- CHANGE THIS
+          ITCH_USER: ramenian   # <--- CHANGE THIS
           PACKAGE: game.zip
