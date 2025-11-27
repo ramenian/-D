@@ -31,13 +31,14 @@ jobs:
         run: |
           echo "${{ secrets.UNITY_LICENSE }}" | base64 --decode > .ulf
           
-      # 4. Build
+     # 4. Build
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
         with:
           targetPlatform: WebGL
-          version: 2022.3.10f1 # Check this version matches Unity Hub!
-          unityLicensingServer: .ulf # Read the file we just made
+          version: 2022.3.10f1
+          unityLicensingServer: .ulf
+          allowDirtyBuild: true  # <--- ADD THIS LINE HERE
 
       # 5. Zip
       - name: Zip Build
