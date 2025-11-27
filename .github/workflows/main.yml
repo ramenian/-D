@@ -3,24 +3,19 @@ name: Build and Upload to Itch
 on:
   push:
     branches:
-      - main  # Or 'master' if your branch is named that
-
-env:
-  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-  # CHANGE THIS to your version (Check Unity Hub > Installs)
-  UNITY_VERSION: 2022.3.10f1 
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Get your project files
+      # 1. Checkout
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      # 2. Free up disk space (Critical for Unity builds)
+      # 2. Free Space
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -31,26 +26,29 @@ jobs:
           large-packages: true
           swap-storage: true
 
-      # 3. Build the Game (The Heavy Lifting)
+      # 3. Build (SECRETS MOVED HERE)
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }} # Optional backup
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }} # Optional backup
         with:
           targetPlatform: WebGL
-          version: ${{ env.UNITY_VERSION }}
-          # This saves the build to a folder named 'build/WebGL'
+          version: 2022.3.10f1 # Ensure this matches your Unity version!
 
-      # 4. Zip the files CORRECTLY (Fixes black screen)
+      # 4. Zip
       - name: Zip Build
         run: |
           cd build/WebGL/WebGL
           zip -r ../../../game.zip . 
 
-      # 5. Send to Itch.io
+      # 5. Deploy
       - name: Deploy to Itch.io
         uses: manleydev/butler-publish-itchio-action@master
         env:
           BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
           CHANNEL: html
-          ITCH_GAME: your-game-name-here # CHANGE THIS
-          ITCH_USER: your-username-here   # CHANGE THIS
+          ITCH_GAME: happy4d # <--- REMEMBER TO FIX THIS
+          ITCH_USER: ramenian   # <--- REMEMBER TO FIX THIS
           PACKAGE: game.zip
